@@ -21,11 +21,9 @@ A Simple Example
 
     import CETEMPublico
 
-    CETEMPublico.download() # downloads small 10KB file
+    cp = CETEMPublico.load() # loads a small 10KB sample
     # or
-    CETEMPublico.download(full=True) # downloads full 12GB file
-
-    cp = CETEMPublico.load()
+    cp = CETEMPublico.load(full=True) # loads the full 12GB
 
     print(cp.tagged_sents())
 

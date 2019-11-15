@@ -5,9 +5,14 @@ import os
 import re
 import requests
 from nltk.corpus.reader.conll import ConllCorpusReader
+from clint.textui import progress
 
 home_path = os.environ['HOME']
 folder = home_path + "/.CETEMPublico"
+small_file = "cetem_publico_10k.txt"
+small_url  = "http://bit.do/cetem2019"
+big_file   = "cetem_publico_full.txt"
+big_url    = "https://www.linguateca.pt/CETEMPublico/download/CETEMPublicoAnotado2019.txt"
 
 def download(full=False):
     """Downloads the corpus file(s) and saves them in a folder.
@@ -17,23 +22,31 @@ def download(full=False):
     TODO: add flag for partial vs full download, allow to define folder to save file
     """
 
-    full_url = "https://www.linguateca.pt/CETEMPublico/download/CETEMPublicoAnotado2019.txt"
-    url = full_url if full else "http://bit.do/cetem2019"
-
-    data = requests.get(url)
+    filename = small_file
+    url = small_url
+    if full:
+        url = big_url
+        filename = big_file
 
     os.makedirs(folder+"/cetem", exist_ok=True)
-    filename = folder +"/cetem/cetem_publico_10k.txt"
-    open(filename, "wb").write(data.content)
 
+    r = requests.get(url, stream=True)
+    path = folder +"/cetem/"+filename
+    with open(path, 'wb') as f:
+        total_length = int(r.headers.get('content-length'))
+        for chunk in progress.bar(r.iter_content(chunk_size=1024), expected_size=(total_length/1024) + 1):
+            if chunk:
+                f.write(chunk)
+                f.flush()
 
-def cetem_to_conll(corpus_file):
+def cetem_to_conll(corpus_file, corpus_folder):
     """Converts corpus from original format to ConLL format
 
     :param corpus_file: the location of the original corpus file
+    :param corpus_folder: the path where to save the conll files
     """
     file = open(corpus_file)
-    os.makedirs(folder  + '/conll/', exist_ok=True)
+    os.makedirs(corpus_folder, exist_ok=True)
 
     cur_file = ""
     frase = False
@@ -43,7 +56,7 @@ def cetem_to_conll(corpus_file):
 
         match = re.match(r'<ext n=(.*?) sec=(.*?) sem=(.*?)>$', line)
         if match:
-            folder_to_write = folder + '/conll/' + match[2] +'/' + match[3] + '/'
+            folder_to_write = corpus_folder + match[2] +'/' + match[3] + '/'
             os.makedirs(folder_to_write, exist_ok=True)
             file_name = match[1]+ '-' + match[2]+ '-'+match[3]+'.conll'
             cur_file = open(folder_to_write + file_name, 'w')
@@ -76,19 +89,30 @@ def load_to_nltk(folder):
     return corpus
 
 
-def load():
+def load(full=False):
     """Load the CETEMPublico corpus
 
     If necessary, first download the corpus and/or convert it to the right format.
 
+    :full=False: set to True if you want the full 12GB file, otherwise it will load the small (10KB) sample
     :returns: a NLTK Corpus object
     """
-    if not os.path.exists(folder + "/cetem/"):
-        download()
 
-    filename = folder +"/cetem/cetem_publico_10k.txt"
-    if not os.path.exists(folder + "/conll/"):
-        cetem_to_conll(filename)
 
-    corpus = load_to_nltk(folder  + '/conll/')
+    filename = small_file
+    conll_folder = folder + "/conll-small/"
+
+    if full:
+        filename = big_file
+        conll_folder = folder + "/conll-full/"
+
+    path = folder +"/cetem/"+filename
+
+    if not os.path.exists(path):
+        download(full=full)
+
+    if not os.path.exists(conll_folder):
+        cetem_to_conll(path, conll_folder)
+
+    corpus = load_to_nltk(conll_folder)
     return corpus
