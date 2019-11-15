@@ -4,6 +4,8 @@ cetem_publico
 ``cetem-publico`` is a Python wrapper for the CETEMPublico corpus. It
 takes care of downloading, storing and importing the corpus into NLTK.
 
+**THIS IS STILL A WORK IN PROGRESS, API MIGHT BREAK WITHOUT WARNING.**
+
 Installing
 ----------
 
