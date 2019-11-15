@@ -9,13 +9,19 @@ from nltk.corpus.reader.conll import ConllCorpusReader
 home_path = os.environ['HOME']
 folder = home_path + "/.cetem_publico"
 
-def download():
-    """Downloads the corpus file(s) and saves them in a folder
+def download(full=False):
+    """Downloads the corpus file(s) and saves them in a folder.
+
+    :full=False: set to True if you want the full 12GB file, otherwise it will download a small (10KB) sample
 
     TODO: add flag for partial vs full download, allow to define folder to save file
     """
-    url = "http://bit.do/cetem2019"
+
+    full_url = "https://www.linguateca.pt/CETEMPublico/download/CETEMPublicoAnotado2019.txt"
+    url = full_url if full else "http://bit.do/cetem2019"
+
     data = requests.get(url)
+
     os.makedirs(folder+"/cetem", exist_ok=True)
     filename = folder +"/cetem/cetem_publico_10k.txt"
     open(filename, "wb").write(data.content)
@@ -60,9 +66,10 @@ def cetem_to_conll(corpus_file):
             continue
 
 def load_to_nltk(folder):
-    """Recursively reads .conll files from a directory tree and return an nltk Corpus object
+    """Recursively reads .conll files from a directory tree
 
     :param folder: the root folder for the corpus
+    :returns: a NLTK Corpus object
     """
     fields = ('words', 'ignore', 'ignore', 'ignore', 'pos')
     corpus = ConllCorpusReader(folder, r".*\.conll", fields)
@@ -70,9 +77,11 @@ def load_to_nltk(folder):
 
 
 def load():
-    """Load the CETEMPublico corpus and return an NLTK Corpus object.
+    """Load the CETEMPublico corpus
 
     If necessary, first download the corpus and/or convert it to the right format.
+
+    :returns: a NLTK Corpus object
     """
     if not os.path.exists(folder + "/cetem/"):
         download()

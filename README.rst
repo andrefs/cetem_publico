@@ -21,8 +21,9 @@ A Simple Example
 
     import cetem_publico
 
-    cetem_publico.download() # downloads small version (10KB)
-                             # use full=True to download the full 12GB version
+    cetem_publico.download() # downloads small 10KB file
+    # or
+    cetem_publico.download(full=True) # downloads full 12GB file
 
     cp = cetem_publico.load()
 
