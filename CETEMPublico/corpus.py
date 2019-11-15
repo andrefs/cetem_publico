@@ -7,7 +7,7 @@ import requests
 from nltk.corpus.reader.conll import ConllCorpusReader
 
 home_path = os.environ['HOME']
-folder = home_path + "/.cetem_publico"
+folder = home_path + "/.CETEMPublico"
 
 def download(full=False):
     """Downloads the corpus file(s) and saves them in a folder.
