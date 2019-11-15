@@ -3,21 +3,22 @@
 """
 import os
 import re
+import gzip
 import requests
 from nltk.corpus.reader.conll import ConllCorpusReader
 from clint.textui import progress
 
 home_path = os.environ['HOME']
 folder = home_path + "/.CETEMPublico"
-small_file = "cetem_publico_10k.txt"
+small_file = "cetem_publico_small.txt.gz"
 small_url  = "http://bit.do/cetem2019"
-big_file   = "cetem_publico_full.txt"
+big_file   = "cetem_publico_full.txt.gz"
 big_url    = "https://www.linguateca.pt/CETEMPublico/download/CETEMPublicoAnotado2019.txt"
 
 def download(full=False):
     """Downloads the corpus file(s) and saves them in a folder.
 
-    :full=False: set to True if you want the full 12GB file, otherwise it will download a small (10KB) sample
+    :full=False: set to True if you want the full 12GB file, otherwise it will download a small (500KB) sample
 
     TODO: add flag for partial vs full download, allow to define folder to save file
     """
@@ -32,7 +33,8 @@ def download(full=False):
 
     r = requests.get(url, stream=True)
     path = folder +"/cetem/"+filename
-    with open(path, 'wb') as f:
+
+    with gzip.open(path, 'wb') as f:
         total_length = int(r.headers.get('content-length'))
         for chunk in progress.bar(r.iter_content(chunk_size=1024), expected_size=(total_length/1024) + 1):
             if chunk:
@@ -45,7 +47,7 @@ def cetem_to_conll(corpus_file, corpus_folder):
     :param corpus_file: the location of the original corpus file
     :param corpus_folder: the path where to save the conll files
     """
-    file = open(corpus_file)
+    file = gzip.open(corpus_file, 'rt')
     os.makedirs(corpus_folder, exist_ok=True)
 
     cur_file = ""
@@ -94,7 +96,7 @@ def load(full=False):
 
     If necessary, first download the corpus and/or convert it to the right format.
 
-    :full=False: set to True if you want the full 12GB file, otherwise it will load the small (10KB) sample
+    :full=False: set to True if you want the full 12GB file, otherwise it will load the small (500KB) sample
     :returns: a NLTK Corpus object
     """
 
