@@ -1,96 +1,85 @@
-
-import requests
+"""
+    Download, convert format and load CETEMPublico corpus to NLTK
+"""
 import os
 import re
-import sys
+import requests
 from nltk.corpus.reader.conll import ConllCorpusReader
 
-
-#escrever dados num ficheiro
-#obter caminho do utilizador
 home_path = os.environ['HOME']
-#pasta para onde gravaremos os dados
 folder = home_path + "/.cetem_publico"
 
-
-#faz download de uma base de dados para um ficheiro
-#TODO: colocar o ficheiro sobre forma de zip(provavelmente usando xz)
 def download():
-  #url do ficheiro, hardcoded por enquanto
-  url = "http://bit.do/cetem2019"
-  #fazer pedido da base de dados ao url especificado
-  data = requests.get(url)
-  #criar
-  os.makedirs(folder+"/cetem",exist_ok=True)
-  filename = folder +"/cetem/cetem_publico_10k.txt"
-  open(filename,"wb").write(data.content)
+    """Downloads the corpus file(s) and saves them in a folder
+
+    TODO: add flag for partial vs full download, allow to define folder to save file
+    """
+    url = "http://bit.do/cetem2019"
+    data = requests.get(url)
+    os.makedirs(folder+"/cetem", exist_ok=True)
+    filename = folder +"/cetem/cetem_publico_10k.txt"
+    open(filename, "wb").write(data.content)
 
 
+def cetem_to_conll(corpus_file):
+    """Converts corpus from original format to ConLL format
 
-#transforma o ficheiro cetem publico para ter formato conll
-def cetem_to_conll(corpusFilename):
-    file = open(corpusFilename)
-    os.makedirs(folder  + '/conll/',exist_ok=True)
+    :param corpus_file: the location of the original corpus file
+    """
+    file = open(corpus_file)
+    os.makedirs(folder  + '/conll/', exist_ok=True)
 
-    ficheiro_atual = ""
+    cur_file = ""
     frase = False
 
     for line in file.readlines():
-        #line = line.rstrip()
         line = re.sub(r'\n', '', line)
 
-        match = re.match(r'<ext n=(.*?) sec=(.*?) sem=(.*?)>$',line)
+        match = re.match(r'<ext n=(.*?) sec=(.*?) sem=(.*?)>$', line)
         if match:
             folder_to_write = folder + '/conll/' + match[2] +'/' + match[3] + '/'
-            os.makedirs(folder_to_write,exist_ok=True)
+            os.makedirs(folder_to_write, exist_ok=True)
             file_name = match[1]+ '-' + match[2]+ '-'+match[3]+'.conll'
-            ficheiro_atual = open(folder_to_write + file_name,'w')
-            continue
-
-        if re.match(r'<s>',line):
+            cur_file = open(folder_to_write + file_name, 'w')
+        elif re.match(r'<s>', line):
             frase = True
-            continue
-        #
-        if re.match(r'</s>',line):
+        elif re.match(r'</s>', line):
             frase = False
-            ficheiro_atual.write('\n')
+            cur_file.write('\n')
+        elif re.match(r'</ext>', line):
+            cur_file.close()
+        elif re.match(r'</?mwe', line):
             continue
-        #
-        if re.match(r'</ext>',line):
-            ficheiro_atual.close()
-            continue
-        #
-        if re.match(r'</?mwe',line):
-            continue
-        #
-        if frase:
+        elif frase:
             line = re.sub(r' ', '_', line)
-            campos = line.split('\t')
-            if len(campos) != 14:
-                ficheiro_atual.write('\t'.join(campos)+ '\tFIXME\n')
+            fields = line.split('\t')
+            if len(fields) != 14:
+                cur_file.write('\t'.join(fields)+ '\tFIXME\n')
             else:
-                ficheiro_atual.write('\t'.join(campos)+ '\n')
+                cur_file.write('\t'.join(fields)+ '\n')
             continue
 
-
-
-#
 def load_to_nltk(folder):
-    corpus = ConllCorpusReader(folder, \
-                                r".*\.conll", \
-                                ('words','ignore','ignore','ignore','pos'))
-    return(corpus)
+    """Recursively reads .conll files from a directory tree and return an nltk Corpus object
+
+    :param folder: the root folder for the corpus
+    """
+    fields = ('words', 'ignore', 'ignore', 'ignore', 'pos')
+    corpus = ConllCorpusReader(folder, r".*\.conll", fields)
+    return corpus
 
 
 def load():
-  if not os.path.exists(folder + "/cetem/"):
-    download()
+    """Load the CETEMPublico corpus and return an NLTK Corpus object.
 
-  filename = folder +"/cetem/cetem_publico_10k.txt"
-  if not os.path.exists(folder + "/conll/"):
-    cetem_to_conll(filename)
+    If necessary, first download the corpus and/or convert it to the right format.
+    """
+    if not os.path.exists(folder + "/cetem/"):
+        download()
 
-  corpus = load_to_nltk(folder  + '/conll/')
-  #print("done processing corpus")
-  return corpus
-    
+    filename = folder +"/cetem/cetem_publico_10k.txt"
+    if not os.path.exists(folder + "/conll/"):
+        cetem_to_conll(filename)
+
+    corpus = load_to_nltk(folder  + '/conll/')
+    return corpus
