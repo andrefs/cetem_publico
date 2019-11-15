@@ -1,7 +1,7 @@
 cetem_publico
 =============
 
-`cetem_publico` is a Python wrapper for the CETEMPublico corpus. It
+``cetem-publico`` is a Python wrapper for the CETEMPublico corpus. It
 takes care of downloading, storing and importing the corpus into NLTK.
 
 Installing
@@ -11,7 +11,7 @@ Install and update using `pip`:
 
 .. code-block:: text
 
-    pip install [--user] cetem_publico
+    pip install [--user] cetem-publico
 
 
 A Simple Example
@@ -19,13 +19,13 @@ A Simple Example
 
 .. code-block:: python
 
-    import cetem_publico
+    import CETEMPublico
 
-    cetem_publico.download() # downloads small 10KB file
+    CETEMPublico.download() # downloads small 10KB file
     # or
-    cetem_publico.download(full=True) # downloads full 12GB file
+    CETEMPublico.download(full=True) # downloads full 12GB file
 
-    cp = cetem_publico.load()
+    cp = CETEMPublico.load()
 
     print(cp.tagged_sents())
 

@@ -5,8 +5,8 @@ import setuptools
 with open("README.rst","rt") as fh:
   longdescription = fh.read()
 
-setuptools.setup(name='cetem_publico',
-    version='0.0.10',
+setuptools.setup(name='cetem-publico',
+    version='0.0.11',
     description='Python wrapper for the CETEMPublico corpus',
     author='André Santos',
     author_email='afs@inesctec.pt',
