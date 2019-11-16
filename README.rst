@@ -1,4 +1,4 @@
-cetem_publico
+cetem-publico
 =============
 
 ``cetem-publico`` is a Python wrapper for the CETEMPublico corpus. It
@@ -29,4 +29,19 @@ A Simple Example
 
     print(cp.tagged_sents())
 
+
+Acknowledgements
+----------------
+
+This module only exists thanks to the `Publico <https://www.publico.pt>`_ newspaper and the team responsible for the `CETEMPublico <https://www.linguateca.pt/CETEMPublico/>`_ corpus.
+
+Bugs and stuff
+--------------
+
+Open a `GitHub issue <https://github.com/andrefs/cetem_publico/issues>`_ or, preferably, send me a pull request.
+
+License
+-------
+
+MIT
 
